@@ -1,0 +1,93 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: MPA-AWS-StepFunction
+Resources:
+  MPALambdaLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: mpa-layer
+      Description: My Python dependencies
+      ContentUri: layers/
+      CompatibleRuntimes:
+        - python3.11
+      LicenseInfo: 'MIT'
+      RetentionPolicy: Retain
+      CompatibleArchitectures:
+        - x86_64
+    Metadata:
+      BuildMethod: python3.11
+  BybitSetupAccount:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda_functions/bybit_setup_account/
+      Handler: handler.lambda_handler
+      Runtime: python3.11
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: MPA
+          POWERTOOLS_LOG_LEVEL: INFO
+      Architectures:
+        - x86_64
+      Layers:
+        - arn:aws:lambda:eu-west-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:65
+        - !Ref MPALambdaLayer
+      MemorySize: 512
+      Timeout: 180
+  BybitGetActiveAccounts:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda_functions/bybit_get_account_active/
+      Handler: handler.lambda_handler
+      Runtime: python3.11
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: MPA
+          POWERTOOLS_LOG_LEVEL: INFO
+          SSM_PARAMETER_ACCOUNT_ACTIVE: /bybit/account/active
+      Architectures:
+        - x86_64
+      Layers:
+        - arn:aws:lambda:eu-west-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:65
+        - !Ref MPALambdaLayer
+      MemorySize: 512
+      Timeout: 180
+  BybitGetOpenTrades:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda_functions/bybit_get_open_trades/
+      Handler: handler.lambda_handler
+      Runtime: python3.11
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: MPA
+          POWERTOOLS_LOG_LEVEL: INFO
+          ENVIRONMENT: DEV
+      Architectures:
+        - x86_64
+      Layers:
+        - arn:aws:lambda:eu-west-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:65
+        - !Ref MPALambdaLayer
+      MemorySize: 512
+      Timeout: 180
+  BybitOpenNewTrades:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda_functions/bybit_open_new_trade/
+      Handler: handler.lambda_handler
+      Runtime: python3.11
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: MPA
+          POWERTOOLS_LOG_LEVEL: INFO
+          ENVIRONMENT: DEV
+          POSITION_SIZE: 0.2
+          OPERATIVITY_OPTIONS: /bybit/operativity/tpsl
+          OPERATIVITY_USER_CHOICE: ops-3
+      Architectures:
+        - x86_64
+      Layers:
+        - arn:aws:lambda:eu-west-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:65
+        - !Ref MPALambdaLayer
+      MemorySize: 512
+      Timeout: 180
+

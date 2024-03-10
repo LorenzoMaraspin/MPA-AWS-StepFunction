@@ -1,0 +1,85 @@
+{
+  "Comment": "A description of my state machine",
+  "StartAt": "Scan BybitAccountSetup Table",
+  "States": {
+    "Scan BybitAccountSetup Table": {
+      "Type": "Task",
+      "Next": "Iterate Over Table Records",
+      "Parameters": {
+        "TableName": "BybitAccountSetup"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:dynamodb:scan",
+      "ResultPath": "$.Items"
+    },
+    "Iterate Over Table Records": {
+      "Type": "Map",
+      "ItemProcessor": {
+        "ProcessorConfig": {
+          "Mode": "INLINE"
+        },
+        "StartAt": "Setup Bybit Account Symbol",
+        "States": {
+          "Setup Bybit Account Symbol": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "OutputPath": "$.Payload",
+            "Parameters": {
+              "Payload.$": "$",
+              "FunctionName": "arn:aws:lambda:eu-west-1:263801614107:function:MPA-SetupBybitAccount:$LATEST"
+            },
+            "Retry": [
+              {
+                "ErrorEquals": [
+                  "Lambda.ServiceException",
+                  "Lambda.AWSLambdaException",
+                  "Lambda.SdkClientException",
+                  "Lambda.TooManyRequestsException"
+                ],
+                "IntervalSeconds": 1,
+                "MaxAttempts": 3,
+                "BackoffRate": 2
+              }
+            ],
+            "Next": "Check Setup Account"
+          },
+          "Check Setup Account": {
+            "Type": "Choice",
+            "Choices": [
+              {
+                "Variable": "$.status_code",
+                "NumericEquals": 200,
+                "Next": "Success"
+              }
+            ],
+            "Default": "SNS Publish"
+          },
+          "Success": {
+            "Type": "Succeed"
+          },
+          "SNS Publish": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::sns:publish",
+            "Parameters": {
+              "TopicArn": "arn:aws:sns:eu-west-1:263801614107:MPA-BybitSetupAccount-Errors",
+              "Message": {
+                "Message": "Unable to setup Bybit Account operativity for secrets specified",
+                "Subject": "ERROR-Setup Bybit Account Operativity"
+              }
+            },
+            "Next": "Fail"
+          },
+          "Fail": {
+            "Type": "Fail"
+          }
+        }
+      },
+      "ItemsPath": "$.Items.Items",
+      "ItemSelector": {
+        "secret_name.$": "$.secret_name",
+        "environment.$": "$.environment",
+        "items.$": "$$.Map.Item.Value"
+      },
+      "End": true
+    }
+  }
+}

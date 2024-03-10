@@ -1,0 +1,36 @@
+{
+  "secret_name": "bybit/test/loma/all",
+  "environment": "DEV",
+  "items": {
+    "position_mode": {
+      "N": "0"
+    },
+    "sell_leverage": {
+      "N": "20"
+    },
+    "symbol": {
+      "S": "eth"
+    },
+    "position_coin": {
+      "S": "ETH"
+    },
+    "account_type": {
+      "S": "CONTRACT"
+    },
+    "market_unit": {
+      "S": "baseCoin"
+    },
+    "position_symbol": {
+      "S": "ETHUSDT"
+    },
+    "trade_mode": {
+      "N": "1"
+    },
+    "buy_leverage": {
+      "N": "20"
+    },
+    "category": {
+      "S": "linear"
+    }
+  }
+}

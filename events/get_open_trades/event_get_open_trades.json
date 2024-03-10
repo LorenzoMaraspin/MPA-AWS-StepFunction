@@ -1,0 +1,82 @@
+{
+  "symbol": "BTCUSDT",
+  "side": "Long",
+  "secret_name": "bybit/test/loma/all",
+  "price": "69621.10000000001",
+  "parameter_name": "btc",
+  "result": {
+    "Item": {
+      "position_mode": {
+        "N": "0"
+      },
+      "sell_leverage": {
+        "N": "20"
+      },
+      "symbol": {
+        "S": "btc"
+      },
+      "position_coin": {
+        "S": "BTC"
+      },
+      "account_type": {
+        "S": "CONTRACT"
+      },
+      "market_unit": {
+        "S": "baseCoin"
+      },
+      "position_symbol": {
+        "S": "BTCUSDT"
+      },
+      "trade_mode": {
+        "N": "1"
+      },
+      "buy_leverage": {
+        "N": "20"
+      },
+      "category": {
+        "S": "linear"
+      },
+      "order_type": {
+        "S": "Market"
+      }
+    },
+    "SdkHttpMetadata": {
+      "AllHttpHeaders": {
+        "Server": [
+          "Server"
+        ],
+        "Connection": [
+          "keep-alive"
+        ],
+        "x-amzn-RequestId": [
+          "S9U3Q3KGJTHILF5JQOADITH9QRVV4KQNSO5AEMVJF66Q9ASUAAJG"
+        ],
+        "x-amz-crc32": [
+          "1987711512"
+        ],
+        "Content-Length": [
+          "312"
+        ],
+        "Date": [
+          "Sun, 10 Mar 2024 16:51:14 GMT"
+        ],
+        "Content-Type": [
+          "application/x-amz-json-1.0"
+        ]
+      },
+      "HttpHeaders": {
+        "Connection": "keep-alive",
+        "Content-Length": "312",
+        "Content-Type": "application/x-amz-json-1.0",
+        "Date": "Sun, 10 Mar 2024 16:51:14 GMT",
+        "Server": "Server",
+        "x-amz-crc32": "1987711512",
+        "x-amzn-RequestId": "S9U3Q3KGJTHILF5JQOADITH9QRVV4KQNSO5AEMVJF66Q9ASUAAJG"
+      },
+      "HttpStatusCode": 200
+    },
+    "SdkResponseMetadata": {
+      "RequestId": "S9U3Q3KGJTHILF5JQOADITH9QRVV4KQNSO5AEMVJF66Q9ASUAAJG"
+    }
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "ops-1": [
+    {
+      "tp_percentage": 0.2,
+      "sl_percentage": 4.5,
+      "size": "75"
+    },
+    {
+      "tp_percentage": 4,
+      "sl_percentage": 4.5,
+      "size": "25"
+    }
+  ],
+  "ops-2": [
+    {
+      "tp_percentage": 0.2,
+      "sl_percentage": 5,
+      "size": "50"
+    },
+    {
+      "tp_percentage": 0.5,
+      "sl_percentage": 5,
+      "size": "25"
+    },
+    {
+      "tp_percentage": 0.9,
+      "sl_percentage": 5,
+      "size": "12.5"
+    },
+    {
+      "tp_percentage": 4,
+      "sl_percentage": 5,
+      "size": "6.25"
+    }
+  ],
+  "ops-3": [
+    {
+      "tp_percentage": 0.5,
+      "sl_percentage": 4.5,
+      "size": "75"
+    }
+  ],
+  "ops-4": [
+    {
+      "tp_percentage": 0.5,
+      "sl_percentage": 4.5,
+      "size": "75"
+    },
+    {
+      "tp_percentage": 4,
+      "sl_percentage": 4.5,
+      "size": "25"
+    }
+  ]
+}
