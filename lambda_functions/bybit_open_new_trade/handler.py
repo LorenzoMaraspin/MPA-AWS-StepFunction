@@ -70,26 +70,46 @@ def calculate_position_size(config,balance):
     )
     logger.info("Calculated the quantity used to open a position")
     qty = f"{quantity:.2f}"
+
+    config['position_qty'] = qty
+
     return qty
 
-def calculate_tp_sl_trade(config, type_op, value):
-    price = config['price']
+def calculate_tp_sl(config):
+    price = float(config['price'])
     side = config['side']
-    if type_op == 'tp':
-        if side == 'Buy':
-            result = f"{float(price) + (float(price) * value /100):.4f}"
-        else:
-            result = f"{float(price) - (float(price) * value / 100):.4f}"
-    else:
-        if side == 'Buy':
-            result = f"{float(price) - (float(price) * value / 100):.4f}"
-        else:
-            result = f"{float(price) + (float(price) * value / 100):.4f}"
-
-    logger.info(f"Defined: {type_op} value = {result}")
+    values = config['operativity_options']
+    result = []
+    for value in values:
+        tp_value = price * value['tp_percentage'] / 100
+        sl_value = price * value['sl_percentage'] / 100
+        size = f"{float(config['position_qty']) * (float(value['size']) / 100):.3f}"
+        result_tp = price + tp_value if side == 'Long' else price - tp_value
+        result_sl = price - sl_value if side == 'Long' else price + sl_value
+        result.append({"tp":f"{result_tp:.4f}", "sl": f"{result_sl:.4f}", "size":size})
 
     return result
 
+def setup_tp_sl_trade(config, bybit_api):
+    values = calculate_tp_sl(config)
+    for value in values:
+        logger.info(f"Setting up tp and sl: {value}")
+        bybit_api.set_tp_sl(value, "Partial")
+
+    return values
+
+def format_response(config, operativity, position_details):
+    payload = (f"Open New Position to: {config['symbol']} \n"
+               f"Details about position opened:\n"
+               f"\t- POSITION SIDE: {config['side']} \n"
+               f"\t- POSITION RISK SIZE: {config['position_size']}\n"
+               f"\t- POSITION SIZE QTY: {config['position_qty']}\n"
+               f"\t- POSITION ENTRY PRICE: {config['price']}\n"
+               f"\t- POSITION OPERATIVITY: {operativity}\n"
+               f"Details about bybit position opened:\n"
+               f"\t- BYBIT ORDER ID: {position_details['orderId']}\n"
+               f"\t- BYBIT ORDER TIMESTAMP: {position_details['timeStamp']}\n\n")
+    return payload
 def lambda_handler(event, context):
     config = get_config(event)
     secret = get_secret(event)
@@ -98,8 +118,11 @@ def lambda_handler(event, context):
     try:
         wallet_balance = bybit_api.get_wallet_balance()
         position_size = calculate_position_size(config,wallet_balance)
-        bybit_api.open_position(position_size)
+        position_details = bybit_api.open_position(position_size)
+        tp_sl_used = setup_tp_sl_trade(config, bybit_api)
+        response = format_response(config, tp_sl_used, position_details)
 
+        return  response
     except Exception as e:
         logger.exception(f"Unable to open new trade due: {e}")
         raise e

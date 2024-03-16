@@ -15,8 +15,8 @@ class BybitApi:
             response = self._session.set_trading_stop(
                 category=self._config['category'],
                 symbol=self._config['position_symbol'],
-                takeProfit=order['take_profit'],
-                stopLoss=order['stop_loss'],
+                takeProfit=order['tp'],
+                stopLoss=order['sl'],
                 tpTriggerBy="MarkPrice",
                 slTriggerB="MarkPrice",
                 tpslMode=mode,
@@ -26,8 +26,8 @@ class BybitApi:
             )
             if response['retMsg'] == 'OK':
                 logger.append_keys(
-                    takeProfit=order['take_profit'],
-                    stopLoss=order['stop_loss'],
+                    takeProfit=order['tp'],
+                    stopLoss=order['sl'],
                     tpslMode=mode,
                     tpSize=order['size'],
                     slSize=order['size'],
