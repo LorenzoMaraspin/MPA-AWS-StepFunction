@@ -1,31 +1,56 @@
 {
   "Comment": "A description of my state machine",
-  "StartAt": "Scan BybitAccountSetup Table",
+  "StartAt": "Get List of Bybit Account Active for New Trades",
   "States": {
-    "Scan BybitAccountSetup Table": {
+    "Get List of Bybit Account Active for New Trades": {
       "Type": "Task",
-      "Next": "Iterate Over Table Records",
+      "Resource": "arn:aws:states:::lambda:invoke",
       "Parameters": {
-        "TableName": "BybitAccountSetup"
+        "Payload.$": "$",
+        "FunctionName": "arn:aws:lambda:eu-west-1:263801614107:function:MPA-GetListAccountActive:$LATEST"
       },
-      "Resource": "arn:aws:states:::aws-sdk:dynamodb:scan",
-      "ResultPath": "$.Items"
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "Map",
+      "ResultPath": "$.accounts"
     },
-    "Iterate Over Table Records": {
+    "Map": {
       "Type": "Map",
       "ItemProcessor": {
         "ProcessorConfig": {
           "Mode": "INLINE"
         },
-        "StartAt": "Setup Bybit Account Symbol",
+        "StartAt": "DynamoDB GetItem",
         "States": {
-          "Setup Bybit Account Symbol": {
+          "DynamoDB GetItem": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::dynamodb:getItem",
+            "Parameters": {
+              "TableName": "BybitAccountSetup",
+              "Key": {
+                "symbol.$": "$.parameter_name"
+              }
+            },
+            "Next": "Close All Possible Open Trades",
+            "ResultPath": "$.result"
+          },
+          "Close All Possible Open Trades": {
             "Type": "Task",
             "Resource": "arn:aws:states:::lambda:invoke",
-            "OutputPath": "$.Payload",
             "Parameters": {
               "Payload.$": "$",
-              "FunctionName": "arn:aws:lambda:eu-west-1:263801614107:function:MPA-SetupBybitAccount:$LATEST"
+              "FunctionName": "arn:aws:lambda:eu-west-1:263801614107:function:MPA-GetOpenTrades:$LATEST"
             },
             "Retry": [
               {
@@ -40,46 +65,52 @@
                 "BackoffRate": 2
               }
             ],
-            "Next": "Check Setup Account"
+            "Next": "Open New Trade",
+            "ResultPath": null
           },
-          "Check Setup Account": {
-            "Type": "Choice",
-            "Choices": [
+          "Open New Trade": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "OutputPath": "$.Payload",
+            "Parameters": {
+              "Payload.$": "$",
+              "FunctionName": "arn:aws:lambda:eu-west-1:263801614107:function:MPA-OpenNewTrade:$LATEST"
+            },
+            "Retry": [
               {
-                "Variable": "$.status_code",
-                "NumericEquals": 200,
-                "Next": "Success"
+                "ErrorEquals": [
+                  "Lambda.ServiceException",
+                  "Lambda.AWSLambdaException",
+                  "Lambda.SdkClientException",
+                  "Lambda.TooManyRequestsException"
+                ],
+                "IntervalSeconds": 1,
+                "MaxAttempts": 3,
+                "BackoffRate": 2
               }
             ],
-            "Default": "SNS Publish"
-          },
-          "Success": {
-            "Type": "Succeed"
+            "Next": "SNS Publish"
           },
           "SNS Publish": {
             "Type": "Task",
             "Resource": "arn:aws:states:::sns:publish",
             "Parameters": {
-              "TopicArn": "arn:aws:sns:eu-west-1:263801614107:MPA-BybitSetupAccount-Errors",
-              "Message": {
-                "Message": "Unable to setup Bybit Account operativity for secrets specified",
-                "Subject": "ERROR-Setup Bybit Account Operativity"
-              }
+              "Message.$": "$",
+              "TopicArn": "arn:aws:sns:eu-west-1:263801614107:MPA-BybitTradeNotification"
             },
-            "Next": "Fail"
-          },
-          "Fail": {
-            "Type": "Fail"
+            "End": true
           }
         }
       },
-      "ItemsPath": "$.Items.Items",
+      "End": true,
+      "ItemsPath": "$.accounts.Payload.active_accounts",
       "ItemSelector": {
-        "secret_name.$": "$.secret_name",
-        "environment.$": "$.environment",
-        "items.$": "$$.Map.Item.Value"
-      },
-      "End": true
+        "side.$": "$.side",
+        "price.$": "$.price",
+        "symbol.$": "$.symbol",
+        "parameter_name.$": "$.parameterName",
+        "secret_name.$": "$$.Map.Item.Value"
+      }
     }
   }
 }
