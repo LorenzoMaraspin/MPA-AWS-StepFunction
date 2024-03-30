@@ -91,4 +91,22 @@ Resources:
         - !Ref MPALambdaLayer
       MemorySize: 512
       Timeout: 180
+  MPATelegramBot:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda_functions/mpa_automation_telegram_bot/
+      Handler: handler.lambda_handler
+      Runtime: python3.11
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: MPA
+          POWERTOOLS_LOG_LEVEL: INFO
+          ENVIRONMENT: DEV
+      Architectures:
+        - x86_64
+      Layers:
+        - arn:aws:lambda:eu-west-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:65
+        - !Ref MPALambdaLayer
+      MemorySize: 512
+      Timeout: 180
 

@@ -8,6 +8,7 @@ boto3 = "*"
 botocore = "*"
 aws-lambda-powertools = "*"
 pybit = "*"
+python-telegram-bot = "*"
 
 [dev-packages]
 
